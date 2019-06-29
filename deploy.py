@@ -23,6 +23,7 @@ PROJECTS_DIR = os.path.join(ROOT_DIR, '.projects')
 PROJECTS_REQUIREMENTS_DIR = os.path.join(ROOT_DIR, '.projects_requirements')
 PROJECTS = [
     'study-watson',
+    'fitcha',
 ]
 
 try:
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         project_requirements_dir = os.path.join(project_dir, '.requirements')
         project_secrets_dir = os.path.join(project_dir, '.secrets')
 
-        shutil.rmtree(project_secrets_dir)
+        shutil.rmtree(project_secrets_dir, ignore_errors=True)
         shutil.copytree(
             os.path.join(DROPBOX_BASE, project),
             project_secrets_dir,

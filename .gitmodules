@@ -1,3 +1,6 @@
 [submodule "study-watson"]
 	path = study-watson
 	url = git@github.com:LeeHanYeong/StudyWatson.git
+[submodule "fitcha"]
+	path = fitcha
+	url = git@github.com:LeeHanYeong/fitcha.git
