@@ -52,6 +52,11 @@ if __name__ == '__main__':
             os.path.join(DROPBOX_BASE, project),
             project_secrets_dir,
         )
+        # 각 프로젝트 폴더에서 git pull 실행
+        os.chdir(os.path.join(ROOT_DIR, project))
+        run('git pull')
+
+        os.chdir(ROOT_DIR)
         run(f'tar cfvz .projects/{project}.tar.gz {project}')
         run(f'cp -rf {project_requirements_dir}/. {PROJECTS_REQUIREMENTS_DIR}/{project}/')
 
