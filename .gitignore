@@ -1,6 +1,8 @@
 *.ipynb
 
 # ignore directories
+/.projects_requirements
+/.projects
 /.secrets
 /.static
 /.media
