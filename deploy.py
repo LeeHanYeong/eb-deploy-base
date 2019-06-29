@@ -11,7 +11,6 @@ parser.add_argument('--build', action='store_true')
 parser.add_argument('--run', action='store_true')
 parser.add_argument('--bash', action='store_true')
 parser.add_argument('--eb', action='store_true')
-parser.add_argument('--venv', action='store_true')
 args = parser.parse_args()
 
 HOME = str(Path.home())
@@ -21,18 +20,12 @@ DROPBOX_BASE = os.path.join(HOME, 'Dropbox', 'settings', 'django')
 
 PROJECTS_DIR = os.path.join(ROOT_DIR, '.projects')
 PROJECTS_REQUIREMENTS_DIR = os.path.join(ROOT_DIR, '.projects_requirements')
-PROJECTS = [
-    'study-watson',
-    'fitcha',
-]
+PROJECTS = json.load(open(os.path.join(SECRETS_DIR, 'projects.json')))['PROJECTS']
 
-try:
-    SECRETS = json.load(open(os.path.join(SECRETS_DIR, 'secrets.json')))
-    ACCESS_KEY = SECRETS['AWS_ACCESS_KEY_ID']
-    SECRET_KEY = SECRETS['AWS_SECRET_ACCESS_KEY']
-    ENV = dict(os.environ, AWS_ACCESS_KEY_ID=ACCESS_KEY, AWS_SECRET_ACCESS_KEY=SECRET_KEY)
-except:
-    ENV = dict(os.environ)
+SECRETS = json.load(open(os.path.join(SECRETS_DIR, 'secrets.json')))
+ACCESS_KEY = SECRETS['AWS_ACCESS_KEY_ID']
+SECRET_KEY = SECRETS['AWS_SECRET_ACCESS_KEY']
+ENV = dict(os.environ, AWS_ACCESS_KEY_ID=ACCESS_KEY, AWS_SECRET_ACCESS_KEY=SECRET_KEY)
 
 
 def run(cmd, **kwargs):
@@ -40,13 +33,6 @@ def run(cmd, **kwargs):
 
 
 if __name__ == '__main__':
-    if args.venv:
-        for project in PROJECTS:
-            run(f'python3 -m venv /srv/env-{project}')
-            run(f'/srv/env-{project}/bin/pip3 install'
-                f' -r /tmp/projects_requirements/{project}/production.txt')
-        exit(0)
-
     os.makedirs(PROJECTS_DIR, exist_ok=True)
     os.makedirs(PROJECTS_REQUIREMENTS_DIR, exist_ok=True)
 
@@ -84,7 +70,9 @@ if __name__ == '__main__':
 
     run('docker push azelf/eb-deploy-base:base')
     run('git add -A')
+    run('git add -f .projects/')
+    run('git add -f .projects_requirements/')
     run('git add -f .secrets/')
     run('eb deploy --staged &')
-    run('sleep 7')
+    run('sleep 30')
     run('git reset HEAD', stdout=subprocess.DEVNULL)

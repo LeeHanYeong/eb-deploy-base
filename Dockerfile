@@ -8,5 +8,5 @@ RUN         rm -rf  /etc/nginx/sites-available/* &&\
             cp -a   /srv/project/.config/nginx*.conf \
                     /etc/nginx/conf.d/
 
-CMD         supervisord -c /srv/project/.config/supervisord.conf -n
+CMD         python3 /tmp/command.py && supervisord -c /srv/project/.config/supervisord.conf -n
 EXPOSE      80

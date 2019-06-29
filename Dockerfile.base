@@ -8,6 +8,8 @@ RUN     apt -y update &&\
 COPY    .requirements /tmp/requirements
 RUN     pip3 install -r /tmp/requirements/production.txt
 
-COPY    deploy.py /tmp
 COPY    .projects_requirements /tmp/projects_requirements
-RUN     python3 /tmp/deploy.py --venv
+COPY    install.py /tmp
+COPY    .secrets/projects.json /tmp
+RUN     python3 /tmp/install.py --venv
+COPY    command.py /tmp
