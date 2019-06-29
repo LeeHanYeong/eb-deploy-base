@@ -1,0 +1,3 @@
+[submodule "study-watson"]
+	path = study-watson
+	url = git@github.com:LeeHanYeong/StudyWatson.git

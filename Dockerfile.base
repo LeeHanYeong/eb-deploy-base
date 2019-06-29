@@ -1,0 +1,6 @@
+FROM    python:3.7.3-slim
+ENV     LANG C.UTF-8
+RUN     apt -y update &&\
+        apt -y dist-upgrade &&\
+        apt -y install nginx && \
+        apt -y autoremove
