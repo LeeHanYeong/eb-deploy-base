@@ -4,3 +4,6 @@
 [submodule "fitcha"]
 	path = fitcha
 	url = git@github.com:LeeHanYeong/fitcha.git
+[submodule "inaina"]
+	path = inaina
+	url = git@github.com:LeeHanYeong/inaina.git
