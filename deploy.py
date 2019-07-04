@@ -66,6 +66,7 @@ if __name__ == '__main__':
         run(f'tar cfvz .projects/{project}.tar.gz {project}')
         run(f'cp -rf {project_requirements_dir}/. {PROJECTS_REQUIREMENTS_DIR}/{project}/')
 
+    run('docker pull python:3.7-slim')
     run('docker build -t azelf/eb-deploy-base:base -f Dockerfile.base .')
     if args.build or args.run or args.bash:
         run('docker build -t eb-deploy-base .')
