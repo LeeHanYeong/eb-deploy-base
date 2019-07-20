@@ -13,5 +13,5 @@ def run(cmd, **kwargs):
 
 if __name__ == '__main__':
     for project in PROJECTS:
-        run(f'/srv/env-{project}/bin/python3 /srv/{project}/app/manage.py collectstatic --noinput')
-        run(f'/srv/env-{project}/bin/python3 /srv/{project}/app/manage.py migrate --noinput')
+        run(f'DJANGO_SETTINGS_MODULE=config.settings.production /srv/env-{project}/bin/python3 /srv/{project}/app/manage.py collectstatic --noinput')
+        run(f'DJANGO_SETTINGS_MODULE=config.settings.production /srv/env-{project}/bin/python3 /srv/{project}/app/manage.py migrate --noinput')
