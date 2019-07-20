@@ -4,7 +4,7 @@ RUN         mkdir /var/log/gunicorn
 RUN         python3 /srv/project/deploy.py --eb
 
 RUN         rm -rf  /etc/nginx/sites-available/* &&\
-            rm -rf  /etc/nginx/site-enabled/* &&\
+            rm -rf  /etc/nginx/sites-enabled/* &&\
             cp -a   /srv/project/.config/nginx*.conf \
                     /etc/nginx/conf.d/
 
