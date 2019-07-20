@@ -2,7 +2,7 @@ FROM    python:3.7-slim
 ENV     LANG C.UTF-8
 RUN     apt -y update &&\
         apt -y dist-upgrade &&\
-        apt -y install nginx && \
+        apt -y install nginx procps htop net-tools && \
         apt -y autoremove
 
 COPY    .requirements /tmp/requirements
