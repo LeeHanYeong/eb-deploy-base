@@ -7,3 +7,6 @@
 [submodule "inaina"]
 	path = inaina
 	url = git@github.com:LeeHanYeong/inaina.git
+[submodule "mashup"]
+	path = mashup
+	url = git@github.com:LeeHanYeong/Mash-Up-Backend.git
