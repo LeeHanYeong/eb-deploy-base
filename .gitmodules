@@ -10,3 +10,6 @@
 [submodule "mashup"]
 	path = mashup
 	url = git@github.com:LeeHanYeong/Mash-Up-Backend.git
+[submodule "washble"]
+	path = washble
+	url = git@github.com:LeeHanYeong/Washble.git
