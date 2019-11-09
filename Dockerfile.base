@@ -12,6 +12,11 @@ COPY    poetry.lock     /srv/project
 COPY    pyproject.toml  /srv/project
 RUN     poetry install
 
+# 프로젝트별 Poetry requirements설치
+COPY    .poetry         /tmp
+COPY    deploy.py       /srv/project/
+RUN     ./deploy.py --install
+
 #COPY    .requirements /tmp/requirements
 #RUN     pip3 install -r /tmp/requirements/production.txt
 

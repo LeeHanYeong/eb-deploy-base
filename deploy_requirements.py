@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 
-import boto3
+import boto3 as boto3
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build', action='store_true')
@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECTS_DIR = os.path.join(ROOT_DIR, '.projects')
-POETRY_DIR = os.path.join(ROOT_DIR, '.poetry')
+PROJECTS_REQUIREMENTS_DIR = os.path.join(ROOT_DIR, '.projects_requirements')
 
 PROJECTS = [
     'washble',
@@ -34,39 +34,16 @@ EB_SECRET_KEY = SESSION_EB_CREDENTIALS.secret_key
 SECRETS_MANAGER_ACCESS_KEY = SESSION_SECRETS_CREDENTIALS.access_key
 SECRETS_MANAGER_SECRET_KEY = SESSION_SECRETS_CREDENTIALS.secret_key
 
-os.environ['AWS_ACCESS_KEY_ID'] = EB_ACCESS_KEY
-os.environ['AWS_SECRET_ACCESS_KEY'] = EB_SECRET_KEY
-ENV = dict(os.environ, AWS_ACCESS_KEY_ID=EB_ACCESS_KEY, AWS_SECRET_ACCESS_KEY=EB_SECRET_KEY)
-
-# Docker Images
-IMAGE_PRODUCTION_LOCAL = 'eb-deploy-base'
-IMAGE_PRODUCTION_ECR = '469671560677.dkr.ecr.ap-northeast-2.amazonaws.com/eb-deploy-base:latest'
-
-# Docker commands
-RUN_OPTIONS = (
-    f'-p 8000:80',
-    f'--name {IMAGE_PRODUCTION_LOCAL}',
-    f'--memory=1024m',
-    f'--memory-swap=1536m',
-    f'--cpus=1',
-    f'{IMAGE_PRODUCTION_LOCAL}',
-)
-RUN_CMD = 'docker run --rm -it {options}'.format(
-    options=' '.join([option for option in RUN_OPTIONS])
-)
+ENV = dict(os.environ, AWS_ACCESS_KEY_ID=ACCESS_KEY, AWS_SECRET_ACCESS_KEY=SECRET_KEY)
 
 
 def run(cmd, **kwargs):
     subprocess.run(cmd, shell=True, env=ENV, **kwargs)
 
 
-def build():
-    os.chdir(ROOT_DIR)
-
-
 if __name__ == '__main__':
     os.makedirs(PROJECTS_DIR, exist_ok=True)
-    os.makedirs(POETRY_DIR, exist_ok=True)
+    os.makedirs(PROJECTS_REQUIREMENTS_DIR, exist_ok=True)
 
     if args.eb:
         # 배포된 후 실행되는 스크립트
@@ -78,43 +55,41 @@ if __name__ == '__main__':
 
     for project in PROJECTS:
         project_dir = os.path.join(ROOT_DIR, project)
-        project_poetry_dir = os.path.join(POETRY_DIR, project)
-        os.makedirs(project_poetry_dir)
+        project_requirements_dir = os.path.join(project_dir, '.requirements')
+        project_secrets_dir = os.path.join(project_dir, '.secrets')
 
+        # 각 프로젝트의 secrets를 Dropbox에서 받아와서, submodule dir에 추가
+        # (gitignore에 있는 파일이므로 영향 없음)
+        shutil.rmtree(project_secrets_dir, ignore_errors=True)
+        shutil.copytree(
+            os.path.join(DROPBOX_BASE, project),
+            project_secrets_dir,
+        )
         # 각 프로젝트 폴더에서 git pull 실행
         os.chdir(os.path.join(ROOT_DIR, project))
         run('git pull')
-
-        # poetry.lock, pyproject.toml을 프로젝트별로 복사
-        shutil.copy(
-            os.path.join(project_dir, 'poetry.lock'),
-            os.path.join(project_poetry_dir),
-        )
-        shutil.copy(
-            os.path.join(project_dir, 'pyproject.toml'),
-            os.path.join(project_poetry_dir),
-        )
 
         # submodule프로젝트를 압축해서 .projects/ 폴더에 추가
         # 이후 배포하며 추가하고, 배포된 후 서버에서 압축을 푼다
         os.chdir(ROOT_DIR)
         run(f'tar cfvz .projects/{project}.tar.gz {project}')
+        run(f'cp -rf {project_requirements_dir}/. {PROJECTS_REQUIREMENTS_DIR}/{project}/')
 
-    run(f'docker pull python:3.7-slim')
-    run(f'docker build -t {IMAGE_PRODUCTION_LOCAL}:base -f Dockerfile.base .')
-
+    run('docker pull python:3.7-slim')
+    run('docker build -t azelf/eb-deploy-base:base -f Dockerfile.base .')
     if args.build or args.run or args.bash:
-        run(f'docker build -t {IMAGE_PRODUCTION_LOCAL} .')
+        run('docker build -t eb-deploy-base .')
         if args.build:
             exit(0)
 
     if args.run:
-        run(f'{RUN_CMD}')
+        run('docker run --rm -it -p 8000:80 --name eb-deploy-base eb-deploy-base')
         exit(0)
     elif args.bash:
-        run(f'{RUN_CMD} /bin/bash')
+        run('docker run --rm -it -p 8000:80 --name eb-deploy-base eb-deploy-base /bin/bash')
         exit(0)
 
+    run('docker push azelf/eb-deploy-base:base')
     run('git add -A')
     run('git add -f .projects/')
     run('git add -f .projects_requirements/')
