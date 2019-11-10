@@ -2,9 +2,9 @@
 
 
 # ignore directories
+projects.txt
 /.poetry
-/.projects_requirements
-/.projects
+/.archive
 /.secrets
 /.static
 /.media
