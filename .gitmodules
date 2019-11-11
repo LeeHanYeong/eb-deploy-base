@@ -13,3 +13,12 @@
 [submodule "projects/washble"]
 	path = projects/washble
 	url = git@github.com:LeeHanYeong/Washble.git
+[submodule "projects/inaina"]
+	path = projects/inaina
+	url = git@github.com:LeeHanYeong/inaina.git
+[submodule "projects/mashup"]
+	path = projects/mashup
+	url = git@github.com:LeeHanYeong/Mash-Up-Backend.git
+[submodule "projects/study-watson"]
+	path = projects/study-watson
+	url = git@github.com:LeeHanYeong/StudyWatson.git
