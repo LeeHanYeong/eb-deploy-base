@@ -113,10 +113,11 @@ class Project:
 
 class DeployUtil:
     SET_PROJECTS, SET_MODE = ('projects', 'mode')
-    MODE_CHOICES = (MODE_BUILD, MODE_RUN, MODE_BASH) = (
+    MODE_CHOICES = (MODE_BUILD, MODE_RUN, MODE_BASH, MODE_DEPLOY) = (
         'Build Docker Image',
         'Run Docker container',
         'Run Bash shell in Docker container',
+        'EB Deploy',
     )
     ENABLE_PROJECTS_INFO_TXT_PATH = os.path.join(ROOT_DIR, 'projects.txt')
 
@@ -130,13 +131,16 @@ class DeployUtil:
         self.export_requirements()
         self.export_projects()
 
-        self.build()
+        self.docker_build()
         if self.mode == self.MODE_BUILD:
             return
         if self.mode == self.MODE_RUN:
             self.docker_run()
         elif self.mode == self.MODE_BASH:
             self.docker_bash()
+        elif self.mode == self.MODE_DEPLOY:
+            self.push_ecr()
+            self.eb_deploy()
 
     def pre_deploy(self):
         def _remove_exists_dirs():
@@ -195,7 +199,7 @@ class DeployUtil:
             project.archive()
             print(f' {index}. {project.name} ({project.requirements_path})')
 
-    def build(self):
+    def docker_build(self):
         os.chdir(ROOT_DIR)
         run('docker pull python:3.7-slim')
         run('docker build {build_args} -t {tag} .'.format(
@@ -214,6 +218,16 @@ class DeployUtil:
 
     def docker_bash(self):
         run(f'{RUN_CMD} /bin/bash')
+
+    def push_ecr(self):
+        # Push ECR
+        run(f'docker tag {IMAGE_PRODUCTION_LOCAL} {IMAGE_PRODUCTION_ECR}')
+        run(f'$(aws ecr get-login --no-include-email --region ap-northeast-2) && docker push {IMAGE_PRODUCTION_ECR}')
+
+    def eb_deploy(self):
+        run(f'git add -A')
+        run(f'eb deploy --staged')
+        run(f'git reset HEAD', stdout=subprocess.DEVNULL)
 
 
 if __name__ == '__main__':
