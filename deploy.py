@@ -1,26 +1,27 @@
 #!/usr/bin/env python
 import argparse
+import json
 import os
 import shutil
 import subprocess
+from dataclasses import dataclass
+from json import JSONDecodeError
+from pathlib import Path
 
 import boto3
+from PyInquirer import prompt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build', action='store_true')
 parser.add_argument('--run', action='store_true')
 parser.add_argument('--bash', action='store_true')
-parser.add_argument('--eb', action='store_true')
-parser.add_argument('--install', action='store_true')
 args = parser.parse_args()
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECTS_DIR = os.path.join(ROOT_DIR, '.projects')
+PROJECTS_DIR = os.path.join(ROOT_DIR, 'projects')
+ARCHIVE_DIR = os.path.join(ROOT_DIR, '.archive')
 POETRY_DIR = os.path.join(ROOT_DIR, '.poetry')
 
-PROJECTS = [
-    'washble',
-]
 AWS_PROFILE_SECRETS = 'lhy-secrets-manager'
 AWS_PROFILE_EB = 'eb-deploy-base'
 AWS_REGION = 'ap-northeast-2'
@@ -61,111 +62,160 @@ def run(cmd, **kwargs):
     subprocess.run(cmd, shell=True, env=ENV, **kwargs)
 
 
-def build():
-    os.chdir(ROOT_DIR)
-    os.makedirs(POETRY_DIR, exist_ok=True)
-    for project in PROJECTS:
-        project_dir = os.path.join(ROOT_DIR, project)
-        project_poetry_dir = os.path.join(POETRY_DIR, project)
-        os.makedirs(project_poetry_dir, exist_ok=True)
+@dataclass
+class Project:
+    name: str
 
-        # 각 프로젝트 폴더에서 git pull 실행
-        os.chdir(os.path.join(ROOT_DIR, project))
-        run('git pull')
+    def __repr__(self):
+        return f'Project({self.name})'
 
-        # poetry.lock, pyproject.toml을 프로젝트별로 복사
-        shutil.copy(
-            os.path.join(project_dir, 'poetry.lock'),
-            os.path.join(project_poetry_dir),
-        )
-        shutil.copy(
-            os.path.join(project_dir, 'pyproject.toml'),
-            os.path.join(project_poetry_dir),
-        )
-    os.chdir(ROOT_DIR)
-    run(f'docker build -t {IMAGE_PRODUCTION_LOCAL}:base -f Dockerfile.base .')
+    def export_requirements(self):
+        os.chdir(self.repo_path)
+        os.makedirs(self.poetry_path, exist_ok=True)
+        run(f'poetry export -f requirements.txt > {self.requirements_path}')
+
+    def archive(self):
+        os.chdir(PROJECTS_DIR)
+        run(f'tar cfvz {self.archive_file_path} {self.name}')
+
+    @property
+    def repo_path(self):
+        return os.path.join(PROJECTS_DIR, self.name)
+
+    @property
+    def poetry_path(self):
+        return os.path.join(POETRY_DIR, self.name)
+
+    @property
+    def requirements_path(self):
+        return os.path.join(self.poetry_path, 'requirements.txt')
+
+    @property
+    def archive_file_path(self):
+        return os.path.join(ARCHIVE_DIR, f'{self.name}.tar.gz')
+
+    @property
+    def deploy_venv_path(self):
+        return os.path.join(os.sep, 'srv', f'env-{self.name}')
+
+    @property
+    def deploy_python_path(self):
+        return os.path.join(self.deploy_venv_path, 'bin', 'python3')
+
+    @property
+    def deploy_project_path(self):
+        return os.path.join(os.sep, 'srv', self.name)
+
+    @property
+    def deploy_project_manage_path(self):
+        return os.path.join(self.deploy_project_path, 'app', 'manage.py')
 
 
-def install():
-    os.chdir(ROOT_DIR)
-    for project in PROJECTS:
-        project_dir = os.path.join(os.sep, 'srv', project)
-        os.makedirs(project_dir, exist_ok=True)
-        shutil.copytree(
-            os.path.join(os.sep, 'tmp', project),
-            project_dir,
-        )
+class DeployUtil:
+    SET_PROJECTS, SET_MODE = ('projects', 'mode')
+    MODE_CHOICES = (MODE_BUILD, MODE_RUN, MODE_BASH) = (
+        'Build Docker Image',
+        'Run Docker container',
+        'Run Bash shell in Docker container',
+    )
+    ENABLE_PROJECTS_INFO_TXT_PATH = os.path.join(ROOT_DIR, 'projects.txt')
+
+    def __init__(self):
+        self.projects = []
+        self.mode = None
+
+    def deploy(self):
+        self.pre_deploy()
+        self.config()
+        self.export_requirements()
+        self.export_projects()
+
+        self.build()
+        if self.mode == self.MODE_BUILD:
+            return
+        if self.mode == self.MODE_RUN:
+            self.docker_run()
+        elif self.mode == self.MODE_BASH:
+            self.docker_bash()
+
+    def pre_deploy(self):
+        def _remove_exists_dirs():
+            os.chdir(ROOT_DIR)
+            shutil.rmtree(POETRY_DIR, ignore_errors=True)
+            shutil.rmtree(ARCHIVE_DIR, ignore_errors=True)
+
+        def _make_dirs():
+            os.chdir(ROOT_DIR)
+            os.makedirs(POETRY_DIR, exist_ok=True)
+            os.makedirs(ARCHIVE_DIR, exist_ok=True)
+            Path(self.ENABLE_PROJECTS_INFO_TXT_PATH).touch()
+
+        _remove_exists_dirs()
+        _make_dirs()
+
+    def config(self):
+        questions = []
+
+        # Projects Questions
+        cur_projects = sorted(os.listdir(PROJECTS_DIR))
+        try:
+            saved_projects_info = json.load(open(self.ENABLE_PROJECTS_INFO_TXT_PATH, 'rt'))
+        except JSONDecodeError:
+            saved_projects_info = json.loads('{}')
+
+        for cur_project in cur_projects:
+            saved_projects_info.setdefault(cur_project, True)
+        questions.append({'type': 'checkbox', 'message': 'Select projects', 'name': self.SET_PROJECTS, 'choices': [
+            {'name': name, 'checked': status} for name, status in saved_projects_info.items()
+        ]})
+
+        # Mode Questions
+        questions.append(
+            {'type': 'list', 'message': 'Select mode', 'name': self.SET_MODE, 'choices': self.MODE_CHOICES})
+
+        answers = prompt(questions)
+
+        # Set & Save projects config
+        for project in saved_projects_info:
+            saved_projects_info[project] = project in answers[self.SET_PROJECTS]
+        json.dump(saved_projects_info, open(self.ENABLE_PROJECTS_INFO_TXT_PATH, 'wt'))
+        self.projects = [Project(name) for name, status in saved_projects_info.items() if status is True]
+
+        # Set mode
+        self.mode = answers[self.SET_MODE]
+
+    def export_requirements(self):
+        os.chdir(ROOT_DIR)
+        run(f'poetry export -f requirements.txt > requirements.txt')
+
+    def export_projects(self):
+        print('Export projects requirements & archive')
+        for index, project in enumerate(self.projects, start=1):
+            project.export_requirements()
+            project.archive()
+            print(f' {index}. {project.name} ({project.requirements_path})')
+
+    def build(self):
+        os.chdir(ROOT_DIR)
+        run('docker pull python:3.7-slim')
+        run('docker build {build_args} -t {tag} .'.format(
+            build_args=' '.join([
+                f'--build-arg {key}={value}'
+                for key, value in {
+                    'AWS_SECRETS_MANAGER_ACCESS_KEY_ID': SECRETS_MANAGER_ACCESS_KEY,
+                    'AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY': SECRETS_MANAGER_SECRET_KEY,
+                }.items()
+            ]),
+            tag=IMAGE_PRODUCTION_LOCAL,
+        ))
+
+    def docker_run(self):
+        run(f'{RUN_CMD}')
+
+    def docker_bash(self):
+        run(f'{RUN_CMD} /bin/bash')
 
 
 if __name__ == '__main__':
-    os.makedirs(PROJECTS_DIR, exist_ok=True)
-
-    # if args.install:
-    #     for project in PROJECTS:
-    #         project_dir = os.path.join(ROOT_DIR, project)
-    #         os.makedirs(project_dir, exist_ok=True)
-    #         os.chdir(project_dir)
-    #     exit(0)
-
-    if args.build:
-        build()
-        exit(0)
-
-    if args.install:
-        install()
-        exit(0)
-
-    if args.eb:
-        # 배포된 후 실행되는 스크립트
-        # .projects/ 내부의 압축파일들을 /srv에 해
-        os.makedirs(os.path.join(ROOT_DIR, '.log'), exist_ok=True)
-        for project in PROJECTS:
-            run(f'tar -xzvf /srv/project/.projects/{project}.tar.gz -C /srv')
-        exit(0)
-
-    for project in PROJECTS:
-        project_dir = os.path.join(ROOT_DIR, project)
-        project_poetry_dir = os.path.join(POETRY_DIR, project)
-        os.makedirs(project_poetry_dir)
-
-        # 각 프로젝트 폴더에서 git pull 실행
-        os.chdir(os.path.join(ROOT_DIR, project))
-        run('git pull')
-
-        # poetry.lock, pyproject.toml을 프로젝트별로 복사
-        shutil.copy(
-            os.path.join(project_dir, 'poetry.lock'),
-            os.path.join(project_poetry_dir),
-        )
-        shutil.copy(
-            os.path.join(project_dir, 'pyproject.toml'),
-            os.path.join(project_poetry_dir),
-        )
-
-        # submodule프로젝트를 압축해서 .projects/ 폴더에 추가
-        # 이후 배포하며 추가하고, 배포된 후 서버에서 압축을 푼다
-        os.chdir(ROOT_DIR)
-        run(f'tar cfvz .projects/{project}.tar.gz {project}')
-
-    run(f'docker pull python:3.7-slim')
-    run(f'docker build -t {IMAGE_PRODUCTION_LOCAL}:base -f Dockerfile.base .')
-
-    if args.build or args.run or args.bash:
-        run(f'docker build -t {IMAGE_PRODUCTION_LOCAL} .')
-        if args.build:
-            exit(0)
-
-    if args.run:
-        run(f'{RUN_CMD}')
-        exit(0)
-    elif args.bash:
-        run(f'{RUN_CMD} /bin/bash')
-        exit(0)
-
-    run('git add -A')
-    run('git add -f .projects/')
-    run('git add -f .projects_requirements/')
-    run('git add -f .secrets/')
-    run('eb deploy --staged &')
-    run('sleep 30')
-    run('git reset HEAD', stdout=subprocess.DEVNULL)
+    util = DeployUtil()
+    util.deploy()

@@ -8,6 +8,6 @@ accesslog = '/var/log/gunicorn/washble.log'
 errorlog = '/var/log/gunicorn/washble-error.log'
 capture_output = True
 raw_env = [
-    'DJANGO_SETTINGS_MODULE=config.settings.dev',
+    'DJANGO_SETTINGS_MODULE=config.settings.production',
 ]
 pythonpath = '/srv/env-washble'

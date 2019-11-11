@@ -2,6 +2,7 @@
 
 
 # ignore directories
+requirements.txt
 projects.txt
 /.poetry
 /.archive
