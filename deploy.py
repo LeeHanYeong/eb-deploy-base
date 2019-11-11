@@ -202,7 +202,7 @@ class DeployUtil:
     def docker_build(self):
         os.chdir(ROOT_DIR)
         run('docker pull python:3.7-slim')
-        run('docker build {build_args} -t {tag} .'.format(
+        run('docker build {build_args} -t {tag} -f {dockerfile} .'.format(
             build_args=' '.join([
                 f'--build-arg {key}={value}'
                 for key, value in {
@@ -211,6 +211,7 @@ class DeployUtil:
                 }.items()
             ]),
             tag=IMAGE_PRODUCTION_LOCAL,
+            dockerfile='Dockerfile.local',
         ))
 
     def docker_run(self):
