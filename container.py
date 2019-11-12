@@ -10,6 +10,7 @@ parser.add_argument('--unarchive', action='store_true')
 parser.add_argument('--nginx', action='store_true')
 parser.add_argument('--supervisor', action='store_true')
 parser.add_argument('--command', action='store_true')
+parser.add_argument('--db', action='store_true')
 args = parser.parse_args()
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -65,6 +66,15 @@ def execute_django_commands():
         run(f'{env} {python} {manage} migrate --noinput')
 
 
+def db_backup():
+    os.chdir(ROOT_DIR)
+    for project in os.listdir(POETRY_DIR):
+        env = 'DJANGO_SETTINGS_MODULE=config.settings.production'
+        python = f'/srv/env-{project}/bin/python3'
+        manage = f'/srv/{project}/app/manage.py'
+        run(f'{env} {python} {manage} dbbackup')
+
+
 if __name__ == '__main__':
     if args.install:
         install()
@@ -84,4 +94,8 @@ if __name__ == '__main__':
 
     if args.command:
         execute_django_commands()
+        exit(0)
+
+    if args.db:
+        db_backup()
         exit(0)
