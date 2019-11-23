@@ -20,6 +20,7 @@ RUN         pip3 install -r /tmp/requirements.txt
 
 # Projects venvs, install
 RUN         mkdir /srv/project
+RUN         mkdir /srv/project/.log
 WORKDIR     /srv/project
 COPY        .poetry                 /srv/project/.poetry
 COPY        container.py            /srv/project/
