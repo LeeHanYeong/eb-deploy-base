@@ -11,6 +11,8 @@ projects.txt
 /.media
 /.temp
 /.log
+/.projects
+/.projects_requirements
 
 # Created by https://www.gitignore.io/api/vue,git,macos,linux,vuejs,django,python,windows,database,pycharm+all,jupyternotebook,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vue,git,macos,linux,vuejs,django,python,windows,database,pycharm+all,jupyternotebook,visualstudiocode
