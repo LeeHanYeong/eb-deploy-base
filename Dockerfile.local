@@ -10,7 +10,8 @@ ENV         AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY=$AWS_SECRETS_MANAGER_SECRET_AC
 # eb-deploy packages & directories
 RUN         apt -y update &&\
             apt -y dist-upgrade &&\
-            apt -y install gcc nginx procps htop net-tools && \
+            apt -y install nginx procps htop net-tools && \
+            apt -y install gcc vim cron && \
             apt -y autoremove
 RUN         mkdir /var/log/gunicorn
 

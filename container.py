@@ -78,24 +78,18 @@ def db_backup():
 if __name__ == '__main__':
     if args.install:
         install()
-        exit(0)
 
     if args.unarchive:
         unarchive()
-        exit(0)
 
     if args.nginx:
         nginx()
-        exit(0)
 
     if args.supervisor:
         supervisor()
-        exit(0)
 
     if args.command:
         execute_django_commands()
-        exit(0)
 
     if args.db:
         db_backup()
-        exit(0)
