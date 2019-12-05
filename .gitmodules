@@ -10,3 +10,6 @@
 [submodule "projects/study-watson"]
 	path = projects/study-watson
 	url = git@github.com:LeeHanYeong/StudyWatson.git
+[submodule "projects/lhy"]
+	path = projects/lhy
+	url = git@github.com:LeeHanYeong/lhy.git
