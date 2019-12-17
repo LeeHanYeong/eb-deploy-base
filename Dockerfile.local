@@ -39,6 +39,9 @@ RUN         rm -rf  /etc/nginx/sites-available/* &&\
 RUN         python3 /srv/project/container.py --nginx
 RUN         python3 /srv/project/container.py --supervisor
 
-# Django command, supervisord
-CMD         python3 /srv/project/container.py --command && supervisord -c /srv/project/.config/supervisord.conf -n
+# collectstatic, migrate
+RUN         python3 /srv/project/container.py --command
+
+# supervisord
+CMD         supervisord -c /srv/project/.config/supervisord.conf -n
 EXPOSE      80
