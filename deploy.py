@@ -140,10 +140,10 @@ class AWSUtil:
     def __init__(self):
         self.is_first = False
         self.swap_cname = 'eb-deploy-base-swap'
-        self.eb_client = boto3.client('elasticbeanstalk')
-        self.elb_client = boto3.client('elbv2')
-        self.ec2_client = boto3.client('ec2')
-        self.sm_client = SESSION_SECRETS.client('secretsmanager')
+        self.eb_client = boto3.client('elasticbeanstalk', region_name=AWS_REGION)
+        self.elb_client = boto3.client('elbv2', region_name=AWS_REGION)
+        self.ec2_client = boto3.client('ec2', region_name=AWS_REGION)
+        self.sm_client = SESSION_SECRETS.client('secretsmanager', region_name=AWS_REGION)
         self.acm_arn = json.loads(
             self.sm_client.get_secret_value(
                 SecretId='lhy'
