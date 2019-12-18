@@ -6,19 +6,10 @@ authors = ["이한영 <dev@lhy.kr>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-supervisor = "^4.1"
-boto3 = "^1.10"
+boto3 = "^1.10.41"
 PyInquirer = "^1.0.3"
-django = "^2.2.7"
-celery = "^4.3.0"
-django-aws-secrets-manager = "^0.1.2"
-psycopg2-binary = "^2.8.4"
-django-allauth = "^0.40.0"
-django-rest-auth = "^0.9.5"
-sentry-sdk = "^0.13.4"
 
 [tool.poetry.dev-dependencies]
-notebook = "^6.0.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
