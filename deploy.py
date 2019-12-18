@@ -386,6 +386,8 @@ class DeployUtil:
             build_args=' '.join([
                 f'--build-arg {key}={value}'
                 for key, value in {
+                    'AWS_ACCESS_KEY_ID': EB_ACCESS_KEY,
+                    'AWS_SECRET_ACCESS_KEY': EB_SECRET_KEY,
                     'AWS_SECRETS_MANAGER_ACCESS_KEY_ID': SECRETS_MANAGER_ACCESS_KEY,
                     'AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY': SECRETS_MANAGER_SECRET_KEY,
                 }.items()

@@ -13,3 +13,4 @@ RUN         poetry export -f requirements.txt > requirements.txt
 RUN         pip install -r requirements.txt
 
 RUN         apt -y install git
+RUN         pip install awscli awsebcli
