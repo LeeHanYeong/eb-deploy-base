@@ -274,8 +274,6 @@ class AWSUtil:
         self._get_environment_names()
         print(' - eb create')
         self._eb_create()
-        print(' - eb deploy')
-        self._eb_deploy()
         print(' - eb settings')
         self._eb_settings()
         if not self.is_first:
