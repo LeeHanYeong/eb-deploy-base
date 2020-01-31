@@ -338,7 +338,7 @@ class DeployUtil:
 
         # Projects Questions
         questions = []
-        cur_projects = sorted(os.listdir(PROJECTS_DIR))
+        cur_projects = sorted([item for item in os.listdir(PROJECTS_DIR) if item[0] != '.'])
 
         try:
             saved_projects_info = json.load(open(self.ENABLE_PROJECTS_INFO_TXT_PATH, 'rt'))
