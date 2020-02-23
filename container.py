@@ -27,8 +27,8 @@ def run(cmd, **kwargs):
 def install():
     os.chdir(ROOT_DIR)
     for project in os.listdir(POETRY_DIR):
-        run(f'python3 -m venv /srv/env-{project}')
-        run(f'/srv/env-{project}/bin/pip3 install'
+        run(f'python3 -m venv /srv/envs/env-{project}')
+        run(f'/srv/envs/env-{project}/bin/pip3 install'
             f' -r /srv/project/.poetry/{project}/requirements.txt')
 
 
@@ -51,7 +51,7 @@ def supervisor():
         for project in os.listdir(POETRY_DIR):
             f.write('\n')
             f.write(f'[program:{project}]\n')
-            f.write(f'command=/srv/env-{project}/bin/gunicorn -c '
+            f.write(f'command=/srv/envs/env-{project}/bin/gunicorn -c '
                     f'/srv/project/.config/{project}/gunicorn.py '
                     f'config.wsgi.production:application\n')
 
@@ -60,7 +60,7 @@ def execute_django_commands():
     os.chdir(ROOT_DIR)
     for project in os.listdir(POETRY_DIR):
         env = 'DJANGO_SETTINGS_MODULE=config.settings.production'
-        python = f'/srv/env-{project}/bin/python3'
+        python = f'/srv/envs/env-{project}/bin/python3'
         manage = f'/srv/{project}/app/manage.py'
         run(f'{env} {python} {manage} collectstatic --noinput')
         run(f'{env} {python} {manage} migrate --noinput')
@@ -70,7 +70,7 @@ def db_backup():
     os.chdir(ROOT_DIR)
     for project in os.listdir(POETRY_DIR):
         env = 'DJANGO_SETTINGS_MODULE=config.settings.production'
-        python = f'/srv/env-{project}/bin/python3'
+        python = f'/srv/envs/env-{project}/bin/python3'
         manage = f'/srv/{project}/app/manage.py'
         run(f'{env} {python} {manage} dbbackup')
 

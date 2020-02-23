@@ -1,7 +1,7 @@
 daemon = False
 chdir = '/srv/washble/app'
 bind = 'unix:/tmp/washble.sock'
-workers = 2
+workers = 1
 threads = 1
 timeout = 60
 accesslog = '/var/log/gunicorn/washble.log'
@@ -10,4 +10,4 @@ capture_output = True
 raw_env = [
     'DJANGO_SETTINGS_MODULE=config.settings.production',
 ]
-pythonpath = '/srv/env-washble'
+pythonpath = '/srv/envs/env-washble'

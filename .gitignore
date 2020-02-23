@@ -4,6 +4,7 @@
 # ignore directories
 requirements.txt
 projects.txt
+/.envs
 /.poetry
 /.archive
 /.secrets

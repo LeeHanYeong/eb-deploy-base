@@ -10,4 +10,4 @@ capture_output = True
 raw_env = [
     'DJANGO_SETTINGS_MODULE=config.settings.production',
 ]
-pythonpath = '/srv/env-mashup'
+pythonpath = '/srv/envs/env-mashup'

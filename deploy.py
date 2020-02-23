@@ -23,6 +23,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECTS_DIR = os.path.join(ROOT_DIR, 'projects')
 ARCHIVE_DIR = os.path.join(ROOT_DIR, '.archive')
 POETRY_DIR = os.path.join(ROOT_DIR, '.poetry')
+VOLUME_ENVS_DIR = os.path.join(ROOT_DIR, '.envs')
 
 AWS_PROFILE_SECRETS = 'lhy-secrets-manager'
 AWS_PROFILE_EB = 'eb-deploy-base'
@@ -383,6 +384,7 @@ class DeployUtil:
         os.chdir(ROOT_DIR)
         run('docker pull python:3.7-slim')
         run('docker build {build_args} -t {tag} -f {dockerfile} .'.format(
+            volume=f'{VOLUME_ENVS_DIR}:/srv/envs/',
             build_args=' '.join([
                 f'--build-arg {key}={value}'
                 for key, value in {
