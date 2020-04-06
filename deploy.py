@@ -64,7 +64,7 @@ ENV = dict(os.environ, AWS_ACCESS_KEY_ID=EB_ACCESS_KEY, AWS_SECRET_ACCESS_KEY=EB
 
 # Docker Images
 IMAGE_PRODUCTION_LOCAL = 'eb-deploy-base'
-IMAGE_PRODUCTION_ECR = '469671560677.dkr.ecr.ap-northeast-2.amazonaws.com/eb-deploy-base:latest'
+IMAGE_PRODUCTION_ECR = '083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/eb-deploy-base:latest'
 
 # Docker commands
 RUN_OPTIONS = (
