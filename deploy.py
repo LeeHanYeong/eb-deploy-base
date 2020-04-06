@@ -64,7 +64,8 @@ ENV = dict(os.environ, AWS_ACCESS_KEY_ID=EB_ACCESS_KEY, AWS_SECRET_ACCESS_KEY=EB
 
 # Docker Images
 IMAGE_PRODUCTION_LOCAL = 'eb-deploy-base'
-IMAGE_PRODUCTION_ECR = '083285518307.dkr.ecr.ap-northeast-2.amazonaws.com/eb-deploy-base:latest'
+IMAGE_PRODUCTION_ECR_BASE = '083285518307.dkr.ecr.ap-northeast-2.amazonaws.com'
+IMAGE_PRODUCTION_ECR = f'{IMAGE_PRODUCTION_ECR_BASE}/eb-deploy-base:latest'
 
 # Docker commands
 RUN_OPTIONS = (
@@ -410,7 +411,9 @@ class DeployUtil:
     def push_ecr():
         # Push ECR
         run(f'docker tag {IMAGE_PRODUCTION_LOCAL} {IMAGE_PRODUCTION_ECR}')
-        run(f'$(aws ecr get-login --no-include-email --region ap-northeast-2) && docker push {IMAGE_PRODUCTION_ECR}')
+        run(f'aws ecr get-login-password --region ap-northeast-2 | '
+            f'docker login --username AWS --password-stdin {IMAGE_PRODUCTION_ECR_BASE} && '
+            f'docker push {IMAGE_PRODUCTION_ECR}')
 
     @staticmethod
     def eb_deploy():

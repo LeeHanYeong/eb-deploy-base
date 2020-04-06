@@ -1,15 +1,17 @@
 branch-defaults:
   master:
-    environment: eb-deploy-base-master
+    environment: eb-deploy-base-green
 environment-defaults:
   eb-deploy-base:
     branch: null
     repository: null
+  eb-deploy-base-green:
+    branch: null
+    repository: null
 global:
   application_name: eb-deploy-base
-  default_ec2_keyname: eb-deploy-base
-  default_platform: arn:aws:elasticbeanstalk:ap-northeast-2::platform/Docker running
-    on 64bit Amazon Linux/2.12.14
+  default_ec2_keyname: lhy2020
+  default_platform: 64bit Amazon Linux 2018.03 v2.14.3 running Docker 18.09.9-ce
   default_region: ap-northeast-2
   include_git_submodules: true
   instance_profile: null
