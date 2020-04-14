@@ -383,7 +383,7 @@ class DeployUtil:
     @staticmethod
     def docker_build():
         os.chdir(ROOT_DIR)
-        run('docker pull python:3.7-slim')
+        run('docker pull python:3.8-slim')
         run('docker build {build_args} -t {tag} -f {dockerfile} .'.format(
             volume=f'{VOLUME_ENVS_DIR}:/srv/envs/',
             build_args=' '.join([
