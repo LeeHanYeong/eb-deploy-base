@@ -1,17 +1,6 @@
 FROM        python:3.8-slim
 ENV         LANG C.UTF-8
 
-# AWS Secrets
-ARG         AWS_ACCESS_KEY_ID
-ARG         AWS_SECRET_ACCESS_KEY
-ARG         AWS_SECRETS_MANAGER_ACCESS_KEY_ID
-ARG         AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY
-
-ENV         AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-ENV         AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-ENV         AWS_SECRETS_MANAGER_ACCESS_KEY_ID=$AWS_SECRETS_MANAGER_ACCESS_KEY_ID
-ENV         AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY=$AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY
-
 # eb-deploy packages & directories
 RUN         apt -y update &&\
             apt -y dist-upgrade &&\
@@ -23,6 +12,18 @@ RUN         mkdir /var/log/gunicorn
 # eb-deploy requirements
 COPY        requirements.txt           /tmp/requirements.txt
 RUN         pip3 install -r /tmp/requirements.txt
+
+# AWS Secrets
+ARG         AWS_ACCESS_KEY_ID
+ARG         AWS_SECRET_ACCESS_KEY
+ARG         AWS_SECRETS_MANAGER_ACCESS_KEY_ID
+ARG         AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY
+
+ENV         AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+ENV         AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+ENV         AWS_SECRETS_MANAGER_ACCESS_KEY_ID=$AWS_SECRETS_MANAGER_ACCESS_KEY_ID
+ENV         AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY=$AWS_SECRETS_MANAGER_SECRET_ACCESS_KEY
+
 
 # Projects venvs, install
 RUN         mkdir /srv/project
