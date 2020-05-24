@@ -13,3 +13,6 @@
 [submodule "projects/lhy"]
 	path = projects/lhy
 	url = https://github.com/LeeHanYeong/lhy.git
+[submodule "projects/fc-headhunting"]
+	path = projects/fc-headhunting
+	url = git@github.com:LeeHanYeong/FAST-CAMPUS-Headhunting-Platform.git
