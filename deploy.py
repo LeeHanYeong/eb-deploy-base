@@ -286,11 +286,12 @@ class AWSUtil:
 
 class DeployUtil:
     SET_PROJECTS, SET_MODE = ('projects', 'mode')
-    MODE_CHOICES = (MODE_BUILD, MODE_RUN, MODE_BASH, MODE_DEPLOY) = (
+    MODE_CHOICES = (MODE_BUILD, MODE_RUN, MODE_BASH, MODE_DEPLOY, MODE_ONLY_DEPLOY) = (
         'Build Docker Image',
         'Run Docker container',
         'Run Bash shell in Docker container',
         'EB Deploy',
+        'EB Deploy (No build)'
     )
     ENABLE_PROJECTS_INFO_TXT_PATH = os.path.join(ROOT_DIR, 'projects.txt')
 
@@ -300,19 +301,20 @@ class DeployUtil:
         self.ci = ci
 
     def deploy(self):
-        self.pre_deploy()
-        self.config()
-        self.export_requirements()
-        self.export_projects()
+        if self.mode != self.MODE_ONLY_DEPLOY:
+            self.pre_deploy()
+            self.config()
+            self.export_requirements()
+            self.export_projects()
 
-        self.docker_build()
+            self.docker_build()
         if self.mode == self.MODE_BUILD:
             return
         if self.mode == self.MODE_RUN:
             self.docker_run()
         elif self.mode == self.MODE_BASH:
             self.docker_bash()
-        elif self.mode == self.MODE_DEPLOY:
+        elif self.mode in (self.MODE_DEPLOY, self.MODE_ONLY_DEPLOY):
             self.push_ecr()
             self.eb_deploy()
 
