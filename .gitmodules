@@ -16,3 +16,6 @@
 [submodule "projects/fc-headhunting"]
 	path = projects/fc-headhunting
 	url = git@github.com:LeeHanYeong/FAST-CAMPUS-Headhunting-Platform.git
+[submodule "projects/django-quill"]
+	path = projects/django-quill
+	url = https://github.com/LeeHanYeong/django-quill-editor-sample.git
