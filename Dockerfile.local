@@ -2,16 +2,13 @@ FROM        python:3.8-slim
 ENV         LANG C.UTF-8
 
 # eb-deploy packages & directories
-RUN         apt -y update &&\
-            apt -y dist-upgrade &&\
-            apt -y install nginx procps htop net-tools && \
+RUN         apt -y update && \
+            apt -y dist-upgrade
+RUN         apt -y install nginx procps htop net-tools && \
             apt -y install supervisor gcc vim cron && \
+            apt -y install gunicorn && \
             apt -y autoremove
 RUN         mkdir /var/log/gunicorn
-
-# eb-deploy requirements
-COPY        requirements.txt           /tmp/requirements.txt
-RUN         pip3 install -r /tmp/requirements.txt
 
 # AWS Secrets
 ARG         AWS_ACCESS_KEY_ID

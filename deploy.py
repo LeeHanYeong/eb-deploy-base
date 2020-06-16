@@ -293,7 +293,7 @@ class DeployUtil:
         'EB Deploy',
         'EB Deploy (No build)'
     )
-    ENABLE_PROJECTS_INFO_TXT_PATH = os.path.join(ROOT_DIR, 'projects.txt')
+    ENABLE_PROJECTS_INFO_JSON_PATH = os.path.join(ROOT_DIR, 'projects.json')
 
     def __init__(self, ci=False):
         self.projects = []
@@ -304,7 +304,6 @@ class DeployUtil:
         if self.mode != self.MODE_ONLY_DEPLOY:
             self.pre_deploy()
             self.config()
-            self.export_requirements()
             self.export_projects()
 
             self.docker_build()
@@ -325,13 +324,13 @@ class DeployUtil:
             shutil.rmtree(ARCHIVE_DIR, ignore_errors=True)
 
         def _remove_pyc():
-            run('find projects -name "*.pyc" -exec rm -f {} \;')
+            run('find projects -name "*.pyc" -delete')
 
         def _make_dirs():
             os.chdir(ROOT_DIR)
             os.makedirs(POETRY_DIR, exist_ok=True)
             os.makedirs(ARCHIVE_DIR, exist_ok=True)
-            Path(self.ENABLE_PROJECTS_INFO_TXT_PATH).touch()
+            Path(self.ENABLE_PROJECTS_INFO_JSON_PATH).touch()
 
         _remove_exists_dirs()
         _remove_pyc()
@@ -349,7 +348,7 @@ class DeployUtil:
         cur_projects = sorted([item for item in os.listdir(PROJECTS_DIR) if item[0] != '.'])
 
         try:
-            saved_projects_info = json.load(open(self.ENABLE_PROJECTS_INFO_TXT_PATH, 'rt'))
+            saved_projects_info = json.load(open(self.ENABLE_PROJECTS_INFO_JSON_PATH, 'rt'))
         except JSONDecodeError:
             saved_projects_info = json.loads('{}')
 
@@ -368,16 +367,11 @@ class DeployUtil:
         # Set & Save projects config
         for project in saved_projects_info:
             saved_projects_info[project] = project in answers[self.SET_PROJECTS]
-        json.dump(saved_projects_info, open(self.ENABLE_PROJECTS_INFO_TXT_PATH, 'wt'))
+        json.dump(saved_projects_info, open(self.ENABLE_PROJECTS_INFO_JSON_PATH, 'wt'))
         self.projects = [Project(name) for name, status in saved_projects_info.items() if status is True]
 
         # Set mode
         self.mode = answers[self.SET_MODE]
-
-    @staticmethod
-    def export_requirements():
-        os.chdir(ROOT_DIR)
-        run(f'poetry export -f requirements.txt > requirements.txt')
 
     def export_projects(self):
         print('Export projects requirements & archive')

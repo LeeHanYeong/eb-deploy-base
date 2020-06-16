@@ -1,0 +1,11 @@
+FROM        python:3.8-slim
+ENV         LANG C.UTF-8
+
+# eb-deploy packages & directories
+RUN         apt -y update && \
+            apt -y dist-upgrade
+RUN         apt -y install nginx procps htop net-tools && \
+            apt -y install supervisor gcc vim cron && \
+            apt -y autoremove
+
+COPY        . /srv/project
