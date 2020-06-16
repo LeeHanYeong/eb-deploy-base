@@ -324,6 +324,9 @@ class DeployUtil:
             shutil.rmtree(POETRY_DIR, ignore_errors=True)
             shutil.rmtree(ARCHIVE_DIR, ignore_errors=True)
 
+        def _remove_pyc():
+            run('find projects -name "*.pyc" -exec rm -f {} \;')
+
         def _make_dirs():
             os.chdir(ROOT_DIR)
             os.makedirs(POETRY_DIR, exist_ok=True)
@@ -331,6 +334,7 @@ class DeployUtil:
             Path(self.ENABLE_PROJECTS_INFO_TXT_PATH).touch()
 
         _remove_exists_dirs()
+        _remove_pyc()
         _make_dirs()
 
     def config(self):
