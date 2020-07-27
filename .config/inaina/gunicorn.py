@@ -1,5 +1,4 @@
 daemon = False
-chdir = '/srv/inaina/app'
 bind = 'unix:/tmp/inaina.sock'
 workers = 1
 threads = 1
@@ -10,4 +9,6 @@ capture_output = True
 raw_env = [
     'DJANGO_SETTINGS_MODULE=config.settings.production',
 ]
-pythonpath = '/srv/envs/env-inaina'
+
+chdir = '/srv/inaina/app'
+pythonpath = '/srv/envs/env-inaina/lib/python3.8/site-packages'

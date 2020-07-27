@@ -1,13 +1,15 @@
 FROM        python:3.8-slim
 ENV         LANG C.UTF-8
+ENV         TZ Asia/Seoul
+RUN         ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # eb-deploy packages & directories
 RUN         apt -y update && \
             apt -y dist-upgrade
-RUN         apt -y install nginx procps htop net-tools && \
-            apt -y install supervisor gcc vim cron && \
-            apt -y install gunicorn && \
+RUN         apt -y install vim procps htop net-tools
+RUN         apt -y install nginx supervisor && \
             apt -y autoremove
+RUN         pip install gunicorn
 RUN         mkdir /var/log/gunicorn
 
 # AWS Secrets

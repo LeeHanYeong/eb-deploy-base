@@ -51,7 +51,7 @@ def supervisor():
         for project in os.listdir(POETRY_DIR):
             f.write('\n')
             f.write(f'[program:{project}]\n')
-            f.write(f'command=/srv/envs/env-{project}/bin/gunicorn -c '
+            f.write(f'command=/usr/local/bin/gunicorn -c '
                     f'/srv/project/.config/{project}/gunicorn.py '
                     f'config.wsgi.production:application\n')
 
