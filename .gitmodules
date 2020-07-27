@@ -1,6 +1,3 @@
-[submodule "projects/washble"]
-	path = projects/washble
-	url = https://github.com/LeeHanYeong/Washble.git
 [submodule "projects/inaina"]
 	path = projects/inaina
 	url = https://github.com/LeeHanYeong/inaina.git
